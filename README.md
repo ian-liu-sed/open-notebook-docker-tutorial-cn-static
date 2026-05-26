@@ -1,6 +1,7 @@
 # Open Notebook Docker 中文教程（静态站点）
 
 面向中文用户的自托管入门页：用 Docker 快速部署 [open-notebook](https://open-notebook-docker-tutorial-cn-static.onrender.com)（开源、隐私优先的 NotebookLM 替代品），并说明 AI Provider 配置与常见问题，教程部署在了render.com上
+
 教程可以帮助用户了解Docker最新部署方式以及相关特性，还有open-notebook这款开源产品对企业，院校，或者普通用户能提供哪些帮助
 
 ## 仓库内容
