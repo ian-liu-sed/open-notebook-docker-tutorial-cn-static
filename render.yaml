@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: open-notebook-docker-tutorial-cn-static
+    runtime: static
+    staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

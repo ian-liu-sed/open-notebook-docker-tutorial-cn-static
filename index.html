@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open Notebook Docker 中文教程</title>
+  <meta
+    name="description"
+    content="Open Notebook Docker 中文静态教程，包含 docker-compose、启动命令、AI Provider 配置、常见问题与静态部署说明。"
+  >
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <p class="eyebrow">Chinese Tutorial Static App</p>
+      <h1>Open Notebook Docker 中文教程</h1>
+      <p class="subtitle">
+        面向中文用户的自托管入门页。目标：最快速度用 Docker 跑起
+        <a href="https://github.com/lfnovo/open-notebook" target="_blank" rel="noreferrer">open-notebook</a>，
+        再补齐 AI Provider 配置。
+      </p>
+      <nav class="main-nav">
+        <a href="#overview">项目概览</a>
+        <a href="#requirements">准备环境</a>
+        <a href="#compose">Compose 配置</a>
+        <a href="#run">启动步骤</a>
+        <a href="#provider">模型配置</a>
+        <a href="#troubleshooting">排错</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="pill">100% 本地部署</span>
+        <span class="pill">Docker 快速启动</span>
+        <span class="pill">中文说明</span>
+        <h2>2 分钟起服务，10 分钟完成可用环境</h2>
+        <p>
+          Open Notebook 是开源、隐私优先、可自托管的 NotebookLM 替代品。
+          支持多模型、多内容类型、本地部署和 API 扩展。官方 README 已给出
+          Docker 快启，本页把它整理成中文可执行步骤。
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#compose">开始安装</a>
+          <a class="btn secondary" href="https://github.com/lfnovo/open-notebook" target="_blank" rel="noreferrer">
+            查看 GitHub
+          </a>
+        </div>
+      </div>
+      <aside class="hero-card">
+        <h3>你会得到</h3>
+        <ul>
+          <li>最小可用 `docker-compose.yml`</li>
+          <li>容器目录与端口说明</li>
+          <li>启动后必须做的 AI Key 配置</li>
+          <li>Windows / macOS / Linux 常见坑</li>
+          <li>静态站可直接部署 Render</li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="overview-grid" id="overview">
+      <article class="card">
+        <h3>为什么用 Open Notebook</h3>
+        <p>自托管、数据可控、多模型提供商、支持 PDF / 音频 / 网页 / 视频 / 笔记 / 搜索。</p>
+      </article>
+      <article class="card">
+        <h3>Docker 方案优点</h3>
+        <p>不用先本地配 Python + Node 全套开发环境。先跑通，再决定是否二开源码。不用担心依赖问题和各种安装报错</p>
+      </article>
+      <article class="card">
+        <h3>最小依赖</h3>
+        <p>官方 Quick Start 只要求 Docker Desktop。API Key 后面在 UI 里再配。</p>
+      </article>
+      <article class="card">
+        <h3>默认访问地址</h3>
+        <p><code>http://localhost:8502</code>，API / 辅助服务端口还会用到 <code>5055</code>。</p>
+      </article>
+    </section>
+
+    <section class="doc" id="requirements">
+      <div class="section-head">
+        <h2>1. 准备环境</h2>
+        <a href="#top" class="top-link">回顶部</a>
+      </div>
+      <div class="info-callout">
+        <strong>官方 Quick Start 结论：</strong>
+        先装 Docker Desktop 即可。AI Provider 的 API Key 不用一开始就写进 compose。
+      </div>
+      <div class="checklist">
+        <label><input type="checkbox" data-check="docker-installed"> 已安装 Docker Desktop（Windows 需要启动虚拟化和安装WSL，安装WSL报错需要安全配置中启动TLS1.2和TLS1.3，要重启几次安装成功）</label>
+        <label><input type="checkbox" data-check="docker-running"> Docker Desktop 已启动（Docker 相关的命令行我们认为可以在Docker Desktop中运行，看右下角的命令行，点击运行，其他终端打开可能会出现问题）</label>
+        <label><input type="checkbox" data-check="folder-ready"> 已新建部署目录</label>
+        <label><input type="checkbox" data-check="port-free"> 本机 8502 / 5055 / 8000 端口未冲突</label>
+        <label><input type="checkbox" data-check="port-free"> 所有的Docker，yml全部下载和更新，全部新images下载和部署，全部在Docker Desktop 命令行中运行，不要去其他地方</label>
+
+      </div>
+      <div class="two-col">
+        <div>
+          <h3>建议目录</h3>
+          <p>比如新建一个独立文件夹并进入，然后可以下载yml：<code>open-notebook-docker</code></p>
+          <pre><code>mkdir open-notebook-docker
+cd open-notebook-docker
+curl -o docker-compose.yml https://raw.githubusercontent.com/lfnovo/open-notebook/main/docker-compose.yml</code></pre>
+        </div>
+        <div>
+          <h3>容器角色</h3>
+          <ul>
+            <li><code>surrealdb</code>：数据库</li>
+            <li><code>open_notebook</code>：应用本体</li>
+            <li><code>./surreal_data</code>：数据库持久化</li>
+            <li><code>./notebook_data</code>：Open Notebook 数据持久化</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="doc" id="compose">
+      <div class="section-head">
+        <h2>2. 如果没执行上述的CURL命令，直接写入 docker-compose.yml</h2>
+        <a href="#top" class="top-link">回顶部</a>
+      </div>
+      <p>
+        下面是基于官方 README 整理的最小可用配置。直接复制保存成
+        <code>docker-compose.yml</code>。
+      </p>
+      <div class="code-toolbar">
+        <span>docker-compose.yml</span>
+        <button class="copy-btn" data-copy-target="compose-block">复制</button>
+      </div>
+      <pre id="compose-block"><code>services:
+  surrealdb:
+    image: surrealdb/surrealdb:v2
+    command: start --log info --user root --pass root rocksdb:/mydata/mydatabase.db
+    user: root
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./surreal_data:/mydata
+    restart: always
+
+  open_notebook:
+    image: lfnovo/open_notebook:v1-latest
+    ports:
+      - "8502:8502"
+      - "5055:5055"
+    environment:
+      - OPEN_NOTEBOOK_ENCRYPTION_KEY=change-me-to-a-secret-string
+      - SURREAL_URL=ws://surrealdb:8000/rpc
+      - SURREAL_USER=root
+      - SURREAL_PASSWORD=root
+      - SURREAL_NAMESPACE=open_notebook
+      - SURREAL_DATABASE=open_notebook
+    volumes:
+      - ./notebook_data:/app/data
+    depends_on:
+      - surrealdb
+    restart: always</code></pre>
+
+      <div class="warning-callout">
+        <strong>必须改：</strong>
+        <code>OPEN_NOTEBOOK_ENCRYPTION_KEY</code> 不能继续用示例值。换成你自己的长随机字符串。如my-secret-321123
+      </div>
+
+      <div class="two-col">
+        <div class="card soft">
+          <h3>关键环境变量</h3>
+          <ul>
+            <li><code>OPEN_NOTEBOOK_ENCRYPTION_KEY</code>：应用加密密钥</li>
+            <li><code>SURREAL_URL</code>：容器内数据库地址</li>
+            <li><code>SURREAL_NAMESPACE</code> / <code>SURREAL_DATABASE</code>：数据库命名空间</li>
+          </ul>
+        </div>
+        <div class="card soft">
+          <h3>端口说明</h3>
+          <ul>
+            <li><code>8502</code>：前端主访问地址</li>
+            <li><code>5055</code>：应用辅助接口端口</li>
+            <li><code>8000</code>：SurrealDB 端口</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="doc" id="run">
+      <div class="section-head">
+        <h2>3. 启动服务</h2>
+        <a href="#top" class="top-link">回顶部</a>
+      </div>
+      <p>在 `docker-compose.yml` 所在目录执行：</p>
+      <div class="code-toolbar">
+        <span>启动命令</span>
+        <button class="copy-btn" data-copy-target="run-block">复制</button>
+      </div>
+      <pre id="run-block"><code>docker compose up -d</code></pre>
+
+      <p>会等待一段时间，下载镜像Images,然后检查状态：</p>
+      <div class="code-toolbar">
+        <span>状态检查</span>
+        <button class="copy-btn" data-copy-target="status-block">复制</button>
+      </div>
+      <pre id="status-block"><code>docker compose ps
+docker compose logs -f open_notebook</code></pre>
+
+      <ol class="step-list">
+        <li>先等 15-20 秒。下载完后会在container中运行，我们进入container查看状态,container会显示这个应用的端口分布，点击</li>
+        <li>浏览器打开 <code>http://localhost:8502</code>。</li>
+        <li>如果打不开，先看 `docker compose ps` 是否两个服务都为 running。</li>
+        <li>再看日志里是否存在端口占用、数据库连接失败、加密 key 配置问题。</li>
+      </ol>
+
+      <div class="info-callout">
+        <strong>首次启动慢一点正常。</strong>
+        Docker 会先拉镜像，再初始化数据库与应用。
+      </div>
+    </section>
+
+    <section class="doc" id="provider">
+      <div class="section-head">
+        <h2>4. 配置 AI Provider</h2>
+        <a href="#top" class="top-link">回顶部</a>
+      </div>
+      <p>
+        官方 README 说得很明确：API Key 在 UI 里后配。进入应用后走这条路径：
+      </p>
+      <ol class="step-list">
+        <li>打开 <strong>Settings</strong> → <strong>API Keys</strong></li>
+        <li>点击 <strong>Add Credential</strong></li>
+        <li>选择 Provider：OpenAI / Anthropic / Google / Ollama / Deepseek</li>
+        <li>粘贴 API Key 并保存</li>
+        <li>点击 <strong>Test Connection</strong></li>
+        <li>点击 <strong>Discover Models</strong> → <strong>Register Models</strong></li>
+        <li>点击 <strong>embeded Models</strong> 时，我们发现一个问题，deepseek-v4只提供了language模型，如果要让整个应用跑起来，需要配置相应的embeded模型，如gpt-4o ，我们需要处理一些数据 </li>
+
+      </ol>
+
+      <div class="two-col">
+        <div class="card soft">
+          <h3>云模型</h3>
+          <p>最省事。OpenAI、Anthropic、Google、Groq 等都能配。</p>
+        </div>
+        <div class="card soft">
+          <h3>本地模型</h3>
+          <p>
+            如果你想省 API 费用，可后续接 Ollama。官方 README 也提到
+            <code>examples/docker-compose-ollama.yml</code>。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="doc" id="troubleshooting">
+      <div class="section-head">
+        <h2>5. 常见问题</h2>
+        <a href="#top" class="top-link">回顶部</a>
+      </div>
+
+      <div class="faq-list">
+        <article class="faq-item">
+          <h3>Q1. `localhost:8502` 打不开</h3>
+          <p>先执行 <code>docker compose ps</code>。如果容器没起来，再看日志：</p>
+          <pre><code>docker compose logs -f surrealdb
+docker compose logs -f open_notebook</code></pre>
+        </article>
+
+        <article class="faq-item">
+          <h3>Q2. 提示加密密钥问题</h3>
+          <p>
+            说明 <code>OPEN_NOTEBOOK_ENCRYPTION_KEY</code> 没改或格式有问题。
+            直接换成更长、随机、不可预测的字符串，再重启容器。
+          </p>
+        </article>
+
+        <article class="faq-item">
+          <h3>Q3. 端口冲突</h3>
+          <p>改 compose 左侧端口映射，比如把 `8502:8502` 改成 `18502:8502`。</p>
+        </article>
+
+        <article class="faq-item">
+          <h3>Q4. Windows 下卷权限异常</h3>
+          <p>
+            确认 Docker Desktop 已允许当前磁盘共享。必要时删掉失败容器，
+            保留 compose 文件后重新 `docker compose up -d`。
+          </p>
+        </article>
+
+        <article class="faq-item">
+          <h3>Q5. 配完 API Key 仍找不到模型</h3>
+          <p>
+            再点一次 <strong>Test Connection</strong>、<strong>Discover Models</strong>、
+            <strong>Register Models</strong>。部分 Provider 还要检查区域或账号权限。
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section class="doc" id="deploy">
+      <div class="section-head">
+        <h2>6. 这个教程站总结</h2>
+        <a href="#top" class="top-link">回顶部</a>
+      </div>
+      <p>
+      </p>
+      <ul>
+        <li>这个教程主要是为了介绍Docker部署的步骤和注意事项，内容相对简洁，适合快速上手。后续考虑增加一些二次开发的内容，比如如何在这个基础上接入更多的模型、如何做数据备份和迁移、如何监控容器状态等。</li>
+        <li>Open Notebook 的灵活性和可扩展性也很适合做一些定制化的开发，比如接入企业内部的知识库、做一些特定领域的微调等。总之，这个教程站的目标是让更多的中文用户能够快速上手 Open Notebook 的 Docker 部署，并且在这个基础上探索更多的可能性。
+</li>
+        <li>我们主要是为了替代notebookLM，提供一个开源、可自托管的解决方案。通过这个教程，希望能够降低部署的门槛，让更多人能够体验到 Open Notebook 的强大功能，同时也欢迎大家在 GitHub 上提出问题和贡献代码，一起完善这个项目。比如国内用户最喜欢的deepseek也加入这个项目，给了大家探索空间
+</li>
+      <li>Docker让我们简化了复杂应用的各种配置，直接运行的效率显著提高，更快吸引用户。有点像steam会为各种游戏配置依赖，而不像过去的玩家缺失配置文件需要到处寻找，仿佛专业的人才能安装和玩游戏</li>
+        <li>我们的研究灵感来自员工需要使用notebookLM，同时对视频和音频的AI分析有一定的要求，所以决定研究open-notebook</li>
+      </ul>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-wrap">
+      <p>Open Notebook Docker 中文教程 • Static Web App</p>
+      <a href="#overview">返回顶部</a>
+    </div>
+  </footer>
+
+  <script src="scripts/main.js"></script>
+</body>
+</html>
